@@ -7,7 +7,8 @@ import "@firebase/auth";
 import { BrowserRouter, Link, Route } from "react-router-dom";
 import { useEffect, useState } from "react";
 import addNewAccountToAuth from "./signUp.js";
-import signInFirebaseAuth from "./signIn";
+import { signInFirebaseAuth, lookUpUserFirestore } from "./signIn";
+
 import {
   Alert,
   Button,
@@ -19,10 +20,13 @@ import {
   Input,
   Loader,
   Modal,
-  Panel,
 } from "rsuite";
-import PlaceholderParagraph from "rsuite/lib/Placeholder/PlaceholderParagraph";
 
+let userData = { ans: false };
+
+function setGlobal(thing) {
+  userData = { ans: thing };
+}
 function App() {
   if (!firebase.apps.length) {
     firebase.initializeApp({
@@ -39,7 +43,7 @@ function App() {
   let [email, setEmail] = useState("");
   let [password, setPassword] = useState("");
   let [user, setUser] = useState("");
-  let [userContent, setUserContent] = useState(<Loader></Loader>);
+  let [userContent, setUserContent] = useState(false);
   let [userButton, setUserButton] = useState("");
   let [modal, setModal] = useState(false);
   let [newListTitle, setNewListTitle] = useState("");
@@ -114,6 +118,43 @@ function App() {
     setNewListElement("");
   }
 
+  function processDBObject(dbObject) {
+    let toRender = [];
+    for (let idx in dbObject) {
+      let temp = [];
+      for (let listElement of dbObject[idx]) {
+        temp.push(<li>{listElement}</li>);
+      }
+      toRender.push(
+        <div id={idx}>
+          {idx}
+          <Button
+            color="red"
+            onClick={() => {
+              deleteList(idx);
+            }}
+          >
+            Delete this
+          </Button>
+          <ul>{temp}</ul>
+          <hr />
+        </div>
+      );
+    }
+    return toRender;
+  }
+
+  async function deleteList(idx) {
+    console.log(userData);
+    let db = firebase.firestore();
+
+    let ref = db.collection("users").doc(userData["ans"]);
+    await ref.update({ [idx]: firebase.firestore.FieldValue.delete() });
+
+    let newContent = await lookUpUserFirestore(userData["ans"]);
+    setUserContent(processDBObject(newContent));
+  }
+
   function deleteLastElement() {
     let aux = [...newListContent];
     if (aux.length === 0) {
@@ -125,6 +166,7 @@ function App() {
   }
 
   async function sendNewListToDB() {
+    setUserContent(<Loader />);
     let contentToPush = [];
 
     for (let element of newListContent) {
@@ -132,13 +174,18 @@ function App() {
     }
 
     let db = firebase.firestore();
-    let dbQuery = db.collection("users").doc(user);
-    await dbQuery.update({ [newListTitle]: contentToPush });
+    console.log(userData["ans"]);
+    let dbQuery = db.collection("users").doc(userData["ans"]);
+
     setNewListElement("");
     setNewListTitle("");
     setNewTitleOK(false);
     setNewListContent([]);
     setModal(false);
+
+    await dbQuery.update({ [newListTitle]: contentToPush });
+    let newContent = await lookUpUserFirestore(userData["ans"]);
+    setUserContent(processDBObject(newContent));
   }
 
   async function signUp() {
@@ -159,13 +206,16 @@ function App() {
       Alert.error("Credentials not entered correctly!");
       return;
     }
-    console.log(email, password);
+    setUserContent(<Loader />);
+    setUser(<Loader />);
     cleanCredentials();
-
     let authSuccess = await signInFirebaseAuth(email, password);
-    setUser(authSuccess[0].email);
 
-    setUserContent(authSuccess[1]);
+    setGlobal(authSuccess[0].email);
+    console.log(userData);
+
+    setUser(authSuccess[0].email);
+    setUserContent(processDBObject(authSuccess[1]));
   }
 
   function signOutFromAuth() {
@@ -250,7 +300,7 @@ function App() {
         <div className="BackgroundSet">
           <div className="Content">
             <Route exact path="/">
-              <div> {userContent}</div>
+              <div>{userContent}</div>
             </Route>
             <Route exact path="/sign-up">
               <div className="SignUpBox">

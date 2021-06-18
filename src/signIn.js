@@ -30,7 +30,7 @@ async function lookUpUserFirestore(emailToFind) {
   let dbQuery = db.collection("users").doc(emailToFind);
   let findings = await dbQuery.get();
 
-  return Object.keys(findings.data());
+  return findings.data();
 }
 
-export default signInFirebaseAuth;
+export { lookUpUserFirestore, signInFirebaseAuth };
