@@ -106,6 +106,10 @@ function App() {
   }
 
   function updateTitle() {
+    if (!newListTitle) {
+      Alert.error("Please enter a title");
+      return;
+    }
     setNewTitleOK(true);
   }
 
@@ -114,6 +118,10 @@ function App() {
   }
 
   function updateNewList() {
+    if (!newListElement) {
+      Alert.error("Empty element!");
+      return;
+    }
     setNewListContent([...newListContent, <li>{newListElement}</li>]);
     setNewListElement("");
   }
@@ -311,7 +319,14 @@ function App() {
           <Button appearance="primary" onClick={sendNewListToDB}>
             OK
           </Button>
-          <Button appearance="subtle">Cancel</Button>
+          <Button
+            appearance="subtle"
+            onClick={() => {
+              setModal(false);
+            }}
+          >
+            Cancel
+          </Button>
         </Modal.Footer>
       </Modal>
       <BrowserRouter>
