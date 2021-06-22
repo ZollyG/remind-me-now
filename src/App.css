@@ -8,6 +8,7 @@
   font-size: calc(10px + 2vmin);
   color: black;
 }
+
 .Slogan {
   margin-top: 2%;
 }
@@ -26,10 +27,12 @@
   color: white;
   text-decoration: none;
 }
+
 .LinkNormal:hover {
   color: white;
   text-decoration: none;
 }
+
 .LinkNormal:focus {
   color: white;
   text-decoration: none;
@@ -37,9 +40,9 @@
 
 .Buttons {
   margin-right: 1.5%;
-
   padding-left: 5%;
 }
+
 .WebTitle {
   font-size: 350%;
   margin-left: 1.5%;
@@ -57,6 +60,7 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  text-align: center;
 }
 
 .Footer {
@@ -99,4 +103,21 @@
 
 .TitleCreate {
   display: flex;
+}
+
+.List {
+  background-color: honeydew;
+  border-radius: 5px;
+  padding: 2%;
+  margin: 2%;
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  min-width: 75vw;
+  box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.36);
+}
+
+.ListContent {
+  border-right: 1px solid teal;
+  padding-right: 5vw;
 }

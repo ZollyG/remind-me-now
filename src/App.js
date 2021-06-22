@@ -119,33 +119,49 @@ function App() {
   }
 
   function processDBObject(dbObject) {
-    let toRender = [];
+    let toRender = [
+      <div>
+        <p>Your saved lists:</p> <hr />
+      </div>,
+    ];
     for (let idx in dbObject) {
       let temp = [];
       for (let listElement of dbObject[idx]) {
         temp.push(<li>{listElement}</li>);
       }
       toRender.push(
-        <div id={idx}>
-          {idx}
-          <Button
-            color="red"
-            onClick={() => {
-              deleteList(idx);
-            }}
-          >
-            Delete this
-          </Button>
-          <ul>{temp}</ul>
-          <hr />
+        <div id={idx} className="List">
+          <div className="ListContent">
+            <h2>{idx}</h2>
+            <ul>{temp}</ul>
+          </div>
+          <div>
+            <Button
+              color="red"
+              onClick={() => {
+                deleteList(idx);
+              }}
+            >
+              Delete this list
+            </Button>
+          </div>
         </div>
       );
+    }
+
+    if (toRender.length === 1) {
+      toRender = [
+        <div>
+          <p>You currently don't have any todo lists!</p>
+          <hr />
+        </div>,
+      ];
     }
     return toRender;
   }
 
   async function deleteList(idx) {
-    console.log(userData);
+    setUserContent(<Loader size="lg" />);
     let db = firebase.firestore();
 
     let ref = db.collection("users").doc(userData["ans"]);
@@ -193,34 +209,47 @@ function App() {
       Alert.error("Credentials not entered correctly!");
       return;
     }
-    console.log(email, password);
+
     cleanCredentials();
 
+    setUserContent(<Loader size="lg" />);
+    setUser(<Loader />);
+
     let authSuccess = await addNewAccountToAuth(email, password);
+    setGlobal(authSuccess.user.email);
     setUser(authSuccess.user.email);
+    setUserContent(
+      <div>
+        <p>You currently don't have any todo lists!</p>
+        <hr />
+      </div>
+    );
   }
 
   async function signIn() {
     if (!email.length || !password.length) {
-      console.log(email, password);
       Alert.error("Credentials not entered correctly!");
       return;
     }
-    setUserContent(<Loader />);
+    setUserContent(<Loader size="lg" />);
     setUser(<Loader />);
     cleanCredentials();
-    let authSuccess = await signInFirebaseAuth(email, password);
-
-    setGlobal(authSuccess[0].email);
-    console.log(userData);
-
-    setUser(authSuccess[0].email);
-    setUserContent(processDBObject(authSuccess[1]));
+    try {
+      let authSuccess = await signInFirebaseAuth(email, password);
+      setGlobal(authSuccess[0].email);
+      setUser(authSuccess[0].email);
+      setUserContent(processDBObject(authSuccess[1]));
+    } catch (err) {
+      Alert.error("Credentials not entered correctly!");
+      setUserContent("");
+      setUser("");
+    }
   }
 
   function signOutFromAuth() {
     setUser("");
     setUserContent("");
+    setGlobal(false);
     firebase
       .auth()
       .signOut()
@@ -293,14 +322,14 @@ function App() {
             </Link>
           </div>
 
-          {user}
+          {user ? <div>Hello, {user} </div> : ""}
           {userButton}
         </div>
 
         <div className="BackgroundSet">
           <div className="Content">
             <Route exact path="/">
-              <div>{userContent}</div>
+              {userContent}
             </Route>
             <Route exact path="/sign-up">
               <div className="SignUpBox">
@@ -339,7 +368,6 @@ function App() {
 
             <Route exact path="/sign-in">
               <div className="SignInBox">
-                <h4>Log In</h4>
                 <Form fluid>
                   <FormGroup>
                     <ControlLabel>Email</ControlLabel>
