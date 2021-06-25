@@ -18,8 +18,7 @@
   color: white;
   position: sticky;
   top: 0;
-  display: flex;
-  justify-content: space-between;
+
   align-items: center;
 }
 
@@ -52,6 +51,7 @@
 
 .Content {
   background-color: whitesmoke;
+  margin-top: 2%;
   min-width: 95%;
   max-width: 95%;
   min-height: 83vh;
@@ -103,6 +103,7 @@
 
 .TitleCreate {
   display: flex;
+  justify-content: space-evenly;
 }
 
 .List {
@@ -120,4 +121,8 @@
 .ListContent {
   border-right: 1px solid teal;
   padding-right: 5vw;
+}
+
+.TitleAnnounce {
+  margin-top: 1%;
 }

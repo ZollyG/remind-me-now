@@ -2,6 +2,7 @@ import firebase from "@firebase/app";
 import "@firebase/firestore";
 import "@firebase/analytics";
 import "@firebase/auth";
+import { Alert } from "rsuite";
 
 async function addNewAccountToAuth(emailToAdd, passwordToAdd) {
   if (!firebase.apps.length) {
@@ -15,10 +16,20 @@ async function addNewAccountToAuth(emailToAdd, passwordToAdd) {
       measurementId: "G-CE5CPM0L1D",
     });
   }
-  addNewAccountToFirebaseFirestore(emailToAdd);
-  let credentials = await firebase
-    .auth()
-    .createUserWithEmailAndPassword(emailToAdd, passwordToAdd);
+
+  let credentials = false;
+  try {
+    credentials = await firebase
+      .auth()
+      .createUserWithEmailAndPassword(emailToAdd, passwordToAdd);
+  } catch (err) {
+    console.error(err);
+    Alert.error(err.message);
+  }
+  if (credentials) {
+    console.log("here");
+    addNewAccountToFirebaseFirestore(emailToAdd);
+  }
 
   return credentials;
 }

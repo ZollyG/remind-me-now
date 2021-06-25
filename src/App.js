@@ -20,13 +20,27 @@ import {
   Input,
   Loader,
   Modal,
+  Navbar,
+  Nav,
 } from "rsuite";
 
 let userData = { ans: false };
+const BASIC_MESSAGE = (
+  <div>
+    <h2>Yes, we know...</h2>
+    <hr />
+    <p>It's hard to keep track of everything sometimes.</p>
+    <p>
+      This is why we've created remind-me-know, an intuitive, simplistic, easy to use
+      to-do list interface.
+    </p>
+  </div>
+);
 
 function setGlobal(thing) {
   userData = { ans: thing };
 }
+
 function App() {
   if (!firebase.apps.length) {
     firebase.initializeApp({
@@ -43,7 +57,7 @@ function App() {
   let [email, setEmail] = useState("");
   let [password, setPassword] = useState("");
   let [user, setUser] = useState("");
-  let [userContent, setUserContent] = useState(false);
+  let [userContent, setUserContent] = useState(BASIC_MESSAGE);
   let [userButton, setUserButton] = useState("");
   let [modal, setModal] = useState(false);
   let [newListTitle, setNewListTitle] = useState("");
@@ -55,33 +69,30 @@ function App() {
     function checkForLoggedInUser() {
       if (firebase.auth().currentUser) {
         setUserButton(
-          <ButtonToolbar className="Buttons">
-            <Link to="/" className="LinkNormal">
-              <Button color="green" onClick={signOutFromAuth}>
-                SIGN OUT
-              </Button>
-            </Link>
-
-            <Button
-              color="red"
+          <Nav pullRight>
+            <Nav.Item
               onClick={() => {
                 setModal(true);
               }}
             >
-              Create new list
-            </Button>
-          </ButtonToolbar>
+              Add new list
+            </Nav.Item>
+
+            <Link to="/" className="LinkNormal">
+              <Nav.Item onClick={signOutFromAuth}>SIGN OUT</Nav.Item>
+            </Link>
+          </Nav>
         );
       } else {
         setUserButton(
-          <ButtonToolbar className="Buttons">
+          <Nav pullRight>
             <Link to="/sign-in" className="LinkNormal">
-              <Button color="blue">SIGN IN</Button>
+              <Nav.Item>SIGN IN</Nav.Item>
             </Link>
             <Link to="/sign-up" className="LinkNormal">
-              <Button color="red">SIGN UP</Button>
+              <Nav.Item>SIGN UP</Nav.Item>
             </Link>
-          </ButtonToolbar>
+          </Nav>
         );
       }
     }
@@ -128,7 +139,7 @@ function App() {
 
   function processDBObject(dbObject) {
     let toRender = [
-      <div>
+      <div className="TitleAnnounce">
         <p>Your saved lists:</p> <hr />
       </div>,
     ];
@@ -190,6 +201,10 @@ function App() {
   }
 
   async function sendNewListToDB() {
+    if (newListTitle === "") {
+      Alert.info("Please enter a title.");
+      return;
+    }
     setUserContent(<Loader />);
     let contentToPush = [];
 
@@ -224,14 +239,20 @@ function App() {
     setUser(<Loader />);
 
     let authSuccess = await addNewAccountToAuth(email, password);
-    setGlobal(authSuccess.user.email);
-    setUser(authSuccess.user.email);
-    setUserContent(
-      <div>
-        <p>You currently don't have any todo lists!</p>
-        <hr />
-      </div>
-    );
+    if (!authSuccess) {
+      setGlobal("");
+      setUser("");
+      setUserContent(BASIC_MESSAGE);
+    } else {
+      setGlobal(authSuccess.user.email);
+      setUser(authSuccess.user.email);
+      setUserContent(
+        <div>
+          <p>You currently don't have any todo lists!</p>
+          <hr />
+        </div>
+      );
+    }
   }
 
   async function signIn() {
@@ -249,14 +270,14 @@ function App() {
       setUserContent(processDBObject(authSuccess[1]));
     } catch (err) {
       Alert.error("Credentials not entered correctly!");
-      setUserContent("");
+      setUserContent(BASIC_MESSAGE);
       setUser("");
     }
   }
 
   function signOutFromAuth() {
     setUser("");
-    setUserContent("");
+    setUserContent(BASIC_MESSAGE);
     setGlobal(false);
     firebase
       .auth()
@@ -285,7 +306,7 @@ function App() {
               <div className="TitleCreate">
                 <Input placeholder="Title of todo list" onChange={handleTitleChange} />
                 <Button appearance="primary" onClick={updateTitle}>
-                  Submit
+                  Add Title
                 </Button>
               </div>
             ) : (
@@ -305,10 +326,7 @@ function App() {
                 onChange={handleNewElementChange}
               />
               <Button appearance="primary" onClick={updateNewList}>
-                Submit
-              </Button>
-              <Button appearance="primary" color="red" onClick={deleteLastElement}>
-                Delete last
+                +
               </Button>
             </div>
           ) : (
@@ -316,8 +334,15 @@ function App() {
           )}
         </Modal.Body>
         <Modal.Footer>
+          {newTitleOK ? (
+            <Button appearance="primary" color="red" onClick={deleteLastElement}>
+              Delete last entry
+            </Button>
+          ) : (
+            ""
+          )}
           <Button appearance="primary" onClick={sendNewListToDB}>
-            OK
+            Submit List
           </Button>
           <Button
             appearance="subtle"
@@ -330,7 +355,26 @@ function App() {
         </Modal.Footer>
       </Modal>
       <BrowserRouter>
-        <div className="Header">
+        <Navbar appearance="inverse" className="Header">
+          <Navbar.Header>
+            <Nav>
+              <Nav.Item>
+                <Link to="/" className="LinkNormal">
+                  remind-me-now.
+                </Link>
+              </Nav.Item>
+            </Nav>
+          </Navbar.Header>
+          <Navbar.Body>
+            <Nav pullRight>
+              <Nav.Item>{user ? <div>Hello, {user} </div> : ""}</Nav.Item>
+            </Nav>
+
+            {userButton}
+          </Navbar.Body>
+        </Navbar>
+
+        {/* <div className="Header">
           <div className="WebTitle">
             <Link to="/" className="LinkNormal">
               remind-me-now.
@@ -338,8 +382,8 @@ function App() {
           </div>
 
           {user ? <div>Hello, {user} </div> : ""}
-          {userButton}
-        </div>
+         
+        </div> */}
 
         <div className="BackgroundSet">
           <div className="Content">
