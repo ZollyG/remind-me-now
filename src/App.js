@@ -23,6 +23,7 @@ import {
   Navbar,
   Nav,
 } from "rsuite";
+import { Helmet } from "react-helmet";
 
 let userData = { ans: false };
 const BASIC_MESSAGE = (
@@ -291,6 +292,9 @@ function App() {
 
   return (
     <div className="App">
+      <Helmet>
+        <title>remind-me-now</title>
+      </Helmet>
       <Modal
         full
         show={modal}
