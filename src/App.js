@@ -59,7 +59,7 @@ function App() {
   let [password, setPassword] = useState("");
   let [user, setUser] = useState("");
   let [userContent, setUserContent] = useState(BASIC_MESSAGE);
-  let [userButton, setUserButton] = useState("");
+  let [userButton, setUserButton] = useState();
   let [modal, setModal] = useState(false);
   let [newListTitle, setNewListTitle] = useState("");
   let [newTitleOK, setNewTitleOK] = useState(false);
@@ -370,9 +370,13 @@ function App() {
             </Nav>
           </Navbar.Header>
           <Navbar.Body>
-            <Nav pullRight>
-              <Nav.Item>{user ? <div>Hello, {user} </div> : ""}</Nav.Item>
-            </Nav>
+            {user ? (
+              <Nav pullRight>
+                <Nav.Item>{<div>Hello, {user} </div>}</Nav.Item>
+              </Nav>
+            ) : (
+              <div></div>
+            )}
 
             {userButton}
           </Navbar.Body>
