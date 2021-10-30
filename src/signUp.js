@@ -22,13 +22,11 @@ async function addNewAccountToAuth(emailToAdd, passwordToAdd) {
     credentials = await firebase
       .auth()
       .createUserWithEmailAndPassword(emailToAdd, passwordToAdd);
+    console.log("here");
+    addNewAccountToFirebaseFirestore(emailToAdd);
   } catch (err) {
     console.error(err);
     Alert.error(err.message);
-  }
-  if (credentials) {
-    console.log("here");
-    addNewAccountToFirebaseFirestore(emailToAdd);
   }
 
   return credentials;
