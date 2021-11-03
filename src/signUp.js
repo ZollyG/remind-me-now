@@ -23,7 +23,8 @@ async function addNewAccountToAuth(emailToAdd, passwordToAdd) {
       .auth()
       .createUserWithEmailAndPassword(emailToAdd, passwordToAdd);
     console.log("here");
-    addNewAccountToFirebaseFirestore(emailToAdd);
+    await addNewAccountToFirebaseFirestore(emailToAdd);
+    console.log("added acc to firestore");
   } catch (err) {
     console.error(err);
     Alert.error(err.message);
@@ -32,9 +33,14 @@ async function addNewAccountToAuth(emailToAdd, passwordToAdd) {
   return credentials;
 }
 
-function addNewAccountToFirebaseFirestore(emailToAdd) {
+async function addNewAccountToFirebaseFirestore(emailToAdd) {
   let db = firebase.firestore();
-  return db.collection("users").doc(emailToAdd).set({});
+  let dummyObj = {};
+  try {
+    db.collection("users").doc(String(emailToAdd)).set(dummyObj);
+  } catch (err) {
+    console.error(err);
+  }
 }
 
 export default addNewAccountToAuth;
