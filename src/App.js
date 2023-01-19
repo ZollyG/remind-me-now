@@ -6,37 +6,18 @@ import "@firebase/analytics";
 import "@firebase/auth";
 import { BrowserRouter, Link, Route } from "react-router-dom";
 import { useEffect, useState } from "react";
-import addNewAccountToAuth from "./signUp.js";
-import { signInFirebaseAuth, lookUpUserFirestore } from "./signIn";
-
-import {
-  Alert,
-  Button,
-  ButtonToolbar,
-  ControlLabel,
-  Form,
-  FormControl,
-  FormGroup,
-  Input,
-  Loader,
-  Modal,
-  Navbar,
-  Nav,
-} from "rsuite";
+import addNewAccountToAuth from "./functions/signUp.js";
+import { signInFirebaseAuth, lookUpUserFirestore } from "./functions/signIn";
+import { Alert, Button, Loader, Navbar, Nav } from "rsuite";
 import { Helmet } from "react-helmet";
+import SignUpBox from "./components/SignUpBox";
+import SignInBox from "./components/SignInBox";
+import signOutFromAuth from "./functions/signOut";
+import ModalList from "./components/ModalList";
+import { firebaseConfig } from "./config/firebase";
+import { BASIC_MESSAGE } from "./config/basicMessage";
 
 let userData = { ans: false };
-const BASIC_MESSAGE = (
-  <div>
-    <h2>Yes, we know...</h2>
-    <hr />
-    <p>It's hard to keep track of everything sometimes.</p>
-    <p>
-      This is why we've created remind-me-know, an intuitive, simplistic, easy to use
-      to-do list interface.
-    </p>
-  </div>
-);
 
 function setGlobal(thing) {
   userData = { ans: thing };
@@ -44,19 +25,9 @@ function setGlobal(thing) {
 
 function App() {
   if (!firebase.apps.length) {
-    firebase.initializeApp({
-      apiKey: "AIzaSyAv3uUkpk3mJTOalaEpQtD599j7Utkl5pQ",
-      authDomain: "to-do-list-multi-user.firebaseapp.com",
-      projectId: "to-do-list-multi-user",
-      storageBucket: "to-do-list-multi-user.appspot.com",
-      messagingSenderId: "410197619988",
-      appId: "1:410197619988:web:f990de0662b51e56a73e01",
-      measurementId: "G-CE5CPM0L1D",
-    });
+    firebase.initializeApp(firebaseConfig);
   }
 
-  let [email, setEmail] = useState("");
-  let [password, setPassword] = useState("");
   let [user, setUser] = useState("");
   let [userContent, setUserContent] = useState(BASIC_MESSAGE);
   let [userButton, setUserButton] = useState();
@@ -65,6 +36,8 @@ function App() {
   let [newTitleOK, setNewTitleOK] = useState(false);
   let [newListContent, setNewListContent] = useState([]);
   let [newListElement, setNewListElement] = useState("");
+  let [email, setEmail] = useState("");
+  let [password, setPassword] = useState("");
 
   useEffect(() => {
     function checkForLoggedInUser() {
@@ -80,7 +53,7 @@ function App() {
             </Nav.Item>
 
             <Link to="/" className="LinkNormal">
-              <Nav.Item onClick={signOutFromAuth}>SIGN OUT</Nav.Item>
+              <Nav.Item onClick={signOut}>SIGN OUT</Nav.Item>
             </Link>
           </Nav>
         );
@@ -100,42 +73,16 @@ function App() {
     checkForLoggedInUser();
   }, [user]);
 
+  function cleanCredentials() {
+    setPassword("");
+    setEmail("");
+  }
   function handleEmailChange(value) {
     setEmail(value);
   }
 
   function handlePasswordChange(value) {
     setPassword(value);
-  }
-
-  function cleanCredentials() {
-    setPassword("");
-    setEmail("");
-  }
-
-  function handleTitleChange(value) {
-    setNewListTitle(value);
-  }
-
-  function updateTitle() {
-    if (!newListTitle) {
-      Alert.error("Please enter a title");
-      return;
-    }
-    setNewTitleOK(true);
-  }
-
-  function handleNewElementChange(value) {
-    setNewListElement(value);
-  }
-
-  function updateNewList() {
-    if (!newListElement) {
-      Alert.error("Empty element!");
-      return;
-    }
-    setNewListContent([...newListContent, <li>{newListElement}</li>]);
-    setNewListElement("");
   }
 
   function processDBObject(dbObject) {
@@ -191,16 +138,6 @@ function App() {
     setUserContent(processDBObject(newContent));
   }
 
-  function deleteLastElement() {
-    let aux = [...newListContent];
-    if (aux.length === 0) {
-      Alert.info("Nothing else to delete!");
-      return;
-    }
-    aux.pop();
-    setNewListContent(aux);
-  }
-
   async function sendNewListToDB() {
     if (newListTitle === "") {
       Alert.info("Please enter a title.");
@@ -235,7 +172,6 @@ function App() {
     }
 
     cleanCredentials();
-
     setUserContent(<Loader size="lg" />);
     setUser(<Loader />);
 
@@ -276,18 +212,11 @@ function App() {
     }
   }
 
-  function signOutFromAuth() {
+  function signOut() {
     setUser("");
     setUserContent(BASIC_MESSAGE);
     setGlobal(false);
-    firebase
-      .auth()
-      .signOut()
-      .then(() => {
-        console.log("Signed out successfully!");
-        Alert.info("Signed out");
-      })
-      .catch((err) => console.log(err));
+    signOutFromAuth();
   }
 
   return (
@@ -295,69 +224,21 @@ function App() {
       <Helmet>
         <title>remind-me-now</title>
       </Helmet>
-      <Modal
-        full
-        show={modal}
-        onHide={() => {
-          setModal(false);
-        }}
-      >
-        <Modal.Header>
-          <Modal.Title>
-            {newTitleOK ? newListTitle : <p>Create new to-do list</p>}
-            <hr />
-            {!newTitleOK ? (
-              <div className="TitleCreate">
-                <Input placeholder="Title of todo list" onChange={handleTitleChange} />
-                <Button appearance="primary" onClick={updateTitle}>
-                  Add Title
-                </Button>
-              </div>
-            ) : (
-              <div />
-            )}
-          </Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <div>
-            <ul>{newListContent}</ul>
-          </div>
-          {newTitleOK ? (
-            <div className="TitleCreate">
-              <Input
-                placeholder="Add element to list"
-                value={newListElement}
-                onChange={handleNewElementChange}
-              />
-              <Button appearance="primary" onClick={updateNewList}>
-                +
-              </Button>
-            </div>
-          ) : (
-            <div />
-          )}
-        </Modal.Body>
-        <Modal.Footer>
-          {newTitleOK ? (
-            <Button appearance="primary" color="red" onClick={deleteLastElement}>
-              Delete last entry
-            </Button>
-          ) : (
-            ""
-          )}
-          <Button appearance="primary" onClick={sendNewListToDB}>
-            Submit List
-          </Button>
-          <Button
-            appearance="subtle"
-            onClick={() => {
-              setModal(false);
-            }}
-          >
-            Cancel
-          </Button>
-        </Modal.Footer>
-      </Modal>
+
+      <ModalList
+        modal={modal}
+        setModal={setModal}
+        newListTitle={newListTitle}
+        setNewListTitle={setNewListTitle}
+        newTitleOK={newTitleOK}
+        setNewTitleOK={setNewTitleOK}
+        newListElement={newListElement}
+        setNewListElement={setNewListElement}
+        newListContent={newListContent}
+        setNewListContent={setNewListContent}
+        sendNewListToDB={sendNewListToDB}
+      />
+
       <BrowserRouter>
         <Navbar appearance="inverse" className="Header">
           <Navbar.Header>
@@ -375,23 +256,12 @@ function App() {
                 <Nav.Item>{<div>Hello, {user} </div>}</Nav.Item>
               </Nav>
             ) : (
-              <div></div>
+              <></>
             )}
 
             {userButton}
           </Navbar.Body>
         </Navbar>
-
-        {/* <div className="Header">
-          <div className="WebTitle">
-            <Link to="/" className="LinkNormal">
-              remind-me-now.
-            </Link>
-          </div>
-
-          {user ? <div>Hello, {user} </div> : ""}
-         
-        </div> */}
 
         <div className="BackgroundSet">
           <div className="Content">
@@ -399,75 +269,26 @@ function App() {
               {userContent}
             </Route>
             <Route exact path="/sign-up">
-              <div className="SignUpBox">
-                <h4>Sign up for a new remind-me-now account</h4>
-                <Form fluid>
-                  <FormGroup>
-                    <ControlLabel>Email</ControlLabel>
-                    <FormControl
-                      name="email"
-                      type="email"
-                      onChange={handleEmailChange}
-                      value={email}
-                    />
-                  </FormGroup>
-                  <FormGroup>
-                    <ControlLabel>Password</ControlLabel>
-                    <FormControl
-                      name="password"
-                      type="password"
-                      onChange={handlePasswordChange}
-                      value={password}
-                    />
-                  </FormGroup>
-                  <FormGroup>
-                    <ButtonToolbar>
-                      <Link to="/" className="LinkNormal">
-                        <Button color="blue" onClick={signUp}>
-                          Submit
-                        </Button>
-                      </Link>
-                    </ButtonToolbar>
-                  </FormGroup>
-                </Form>
-              </div>
+              <SignUpBox
+                signUp={signUp}
+                email={email}
+                password={password}
+                handleEmailChange={handleEmailChange}
+                handlePasswordChange={handlePasswordChange}
+              />
             </Route>
 
             <Route exact path="/sign-in">
-              <div className="SignInBox">
-                <Form fluid>
-                  <FormGroup>
-                    <ControlLabel>Email</ControlLabel>
-                    <FormControl
-                      name="email"
-                      type="email"
-                      onChange={handleEmailChange}
-                      value={email}
-                    />
-                  </FormGroup>
-                  <FormGroup>
-                    <ControlLabel>Password</ControlLabel>
-                    <FormControl
-                      onChange={handlePasswordChange}
-                      value={password}
-                      name="password"
-                      type="password"
-                    />
-                  </FormGroup>
-                  <FormGroup>
-                    <ButtonToolbar>
-                      <Link to="/" className="LinkNormal">
-                        <Button color="blue" onClick={signIn}>
-                          Login
-                        </Button>
-                      </Link>
-                    </ButtonToolbar>
-                  </FormGroup>
-                </Form>
-              </div>
+              <SignInBox
+                signIn={signIn}
+                email={email}
+                password={password}
+                handleEmailChange={handleEmailChange}
+                handlePasswordChange={handlePasswordChange}
+              />
             </Route>
           </div>
-          <div className="Footer">©remind-me-now 2021. All rights reserved.</div>
+          <div className="Footer">©remind-me-now 2023. All rights reserved.</div>
         </div>
       </BrowserRouter>
     </div>
