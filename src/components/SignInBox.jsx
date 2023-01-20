@@ -17,7 +17,7 @@ export default function SignInBox({
   signIn,
 }) {
   return (
-    <div className="SignInBox">
+    <div className="CredBox">
       <Form fluid>
         <FormGroup>
           <ControlLabel>Email</ControlLabel>

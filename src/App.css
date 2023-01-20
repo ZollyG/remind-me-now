@@ -14,11 +14,9 @@
 }
 
 .Header {
-  background-color: rgb(66, 66, 253);
   color: white;
   position: sticky;
   top: 0;
-
   align-items: center;
 }
 
@@ -50,7 +48,7 @@
 }
 
 .Content {
-  background-color: whitesmoke;
+  background-color: rgba(245, 245, 245, 0.807);
   margin-top: 2%;
   min-width: 95%;
   max-width: 95%;
@@ -71,21 +69,10 @@
   font-size: smaller;
 }
 
-.SignUpBox {
-  min-width: 50%;
-  background-color: lightgray;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: 3%;
-  border: 2px solid teal;
-  border-radius: 5px;
-  margin: 2%;
-}
-
-.SignInBox {
-  min-width: 50%;
-  background-color: lightgray;
+.CredBox {
+  color: white;
+  min-width: 40%;
+  background-color: #282c349b;
   display: flex;
   flex-direction: column;
   justify-content: center;

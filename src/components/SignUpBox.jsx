@@ -17,7 +17,7 @@ export default function SignUpBox({
   signUp,
 }) {
   return (
-    <div className="SignUpBox">
+    <div className="CredBox">
       <h4>Sign up for a new remind-me-now account</h4>
       <Form fluid>
         <FormGroup>
