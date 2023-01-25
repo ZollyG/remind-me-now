@@ -15,9 +15,8 @@ async function addNewAccountToAuth(emailToAdd, passwordToAdd) {
     credentials = await firebase
       .auth()
       .createUserWithEmailAndPassword(emailToAdd, passwordToAdd);
-    console.log("here");
+
     await addNewAccountToFirebaseFirestore(emailToAdd);
-    console.log("added acc to firestore");
   } catch (err) {
     console.error(err);
     Alert.error(err.message);

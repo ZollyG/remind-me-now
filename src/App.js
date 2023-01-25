@@ -4,12 +4,11 @@ import firebase from "@firebase/app";
 import "@firebase/firestore";
 import "@firebase/analytics";
 import "@firebase/auth";
-import { BrowserRouter, Link, Route } from "react-router-dom";
+import { Link, Route } from "react-router-dom";
 import { useEffect, useState } from "react";
 import addNewAccountToAuth from "./functions/signUpFB.js";
 import { signInFirebaseAuth, lookUpUserFirestore } from "./functions/signInFB";
 import { Alert, Button, Loader, Navbar, Nav } from "rsuite";
-import { Helmet } from "react-helmet";
 import SignUpBox from "./components/SignUpBox";
 import SignInBox from "./components/SignInBox";
 import signOutFromAuth from "./functions/signOutFB";
@@ -151,7 +150,6 @@ function App() {
     }
 
     let db = firebase.firestore();
-    console.log(userData["ans"]);
     let dbQuery = db.collection("users").doc(userData["ans"]);
 
     setNewListElement("");
@@ -221,10 +219,6 @@ function App() {
 
   return (
     <div className="App">
-      <Helmet>
-        <title>remind-me-now</title>
-      </Helmet>
-
       <ModalList
         modal={modal}
         setModal={setModal}
@@ -239,58 +233,56 @@ function App() {
         sendNewListToDB={sendNewListToDB}
       />
 
-      <BrowserRouter>
-        <Navbar appearance="inverse" className="Header">
-          <Navbar.Header>
-            <Nav>
-              <Nav.Item>
-                <Link to="/" className="LinkNormal">
-                  remind-me-now.
-                </Link>
-              </Nav.Item>
+      <Navbar appearance="inverse" className="Header">
+        <Navbar.Header>
+          <Nav>
+            <Nav.Item>
+              <Link to="/" className="LinkNormal">
+                remind-me-now.
+              </Link>
+            </Nav.Item>
+          </Nav>
+        </Navbar.Header>
+        <Navbar.Body>
+          {user ? (
+            <Nav pullRight>
+              <Nav.Item>{<div>Hello, {user} </div>}</Nav.Item>
             </Nav>
-          </Navbar.Header>
-          <Navbar.Body>
-            {user ? (
-              <Nav pullRight>
-                <Nav.Item>{<div>Hello, {user} </div>}</Nav.Item>
-              </Nav>
-            ) : (
-              <></>
-            )}
+          ) : (
+            <></>
+          )}
 
-            {userButton}
-          </Navbar.Body>
-        </Navbar>
+          {userButton}
+        </Navbar.Body>
+      </Navbar>
 
-        <div className="BackgroundSet">
-          <div className="Content">
-            <Route exact path="/">
-              {userContent}
-            </Route>
-            <Route exact path="/sign-up">
-              <SignUpBox
-                signUp={signUp}
-                email={email}
-                password={password}
-                handleEmailChange={handleEmailChange}
-                handlePasswordChange={handlePasswordChange}
-              />
-            </Route>
+      <div className="BackgroundSet">
+        <div className="Content">
+          <Route exact path="/">
+            {userContent}
+          </Route>
+          <Route exact path="/sign-up">
+            <SignUpBox
+              signUp={signUp}
+              email={email}
+              password={password}
+              handleEmailChange={handleEmailChange}
+              handlePasswordChange={handlePasswordChange}
+            />
+          </Route>
 
-            <Route exact path="/sign-in">
-              <SignInBox
-                signIn={signIn}
-                email={email}
-                password={password}
-                handleEmailChange={handleEmailChange}
-                handlePasswordChange={handlePasswordChange}
-              />
-            </Route>
-          </div>
-          <div className="Footer">©remind-me-now 2023. All rights reserved.</div>
+          <Route exact path="/sign-in">
+            <SignInBox
+              signIn={signIn}
+              email={email}
+              password={password}
+              handleEmailChange={handleEmailChange}
+              handlePasswordChange={handlePasswordChange}
+            />
+          </Route>
         </div>
-      </BrowserRouter>
+        <div className="Footer">©remind-me-now 2023. All rights reserved.</div>
+      </div>
     </div>
   );
 }

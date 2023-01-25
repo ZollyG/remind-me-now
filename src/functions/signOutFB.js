@@ -3,9 +3,7 @@ import { Alert } from "rsuite";
 
 export default async function signOutFromAuth() {
   try {
-    let process = firebase.auth();
-    process = await process.signOut();
-    console.log("Signed out successfully!", process);
+    await firebase.auth().signOut();
     Alert.info("Signed out");
   } catch (e) {
     console.error(e);
